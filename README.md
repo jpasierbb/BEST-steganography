@@ -13,6 +13,7 @@ Transaction ID (TXID) - W każdym zapytaniu DNS, klient losuje 16-bitowy numer i
 
 Nasza domena to będzie coś w stylu **rnicrosoft.pl**, żeby się zlewało i zapytanie do DNS pod **teams.rnicrosoft.pl**
 
+Nawet jak ofiara korzysta z DNS google'a 8.8.8.8, to on i tak odwoła się do naszego DNS jeśli to będzie nasza podsieć i wtedy mamy pełną kontrolę nad odpowiedzią.
 
 ## Step-by-step
 1. Dane tekstowe są konwertowane do postaci binarnej.
