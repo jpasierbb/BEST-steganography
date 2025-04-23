@@ -32,5 +32,14 @@ def send_dns_query(data):
     except socket.timeout:
         print("No response received (timeout)")
 
+def send_dns_query_from_file(path):
+    with open(path, encoding="cp1250") as file:
+        while True:
+            char = file.read(1)
+            if not char:
+                break
+            send_dns_query(char)
+
 if __name__ == "__main__":
-    send_dns_query("secret")
+    # send_dns_query("secret")
+    send_dns_query_from_file("data/Sofokles-Antygona.txt")
