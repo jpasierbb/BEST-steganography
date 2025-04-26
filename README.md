@@ -18,7 +18,7 @@ Nawet jak ofiara korzysta z DNS google'a 8.8.8.8, to on i tak odwoła się do na
 ## Step-by-step
 1. Dane tekstowe są konwertowane do postaci binarnej.
 2. Binarne dane są dzielone na 16-bitowe bloki.
-3. Każdy blok jest mieszany w następujący sposób: char1[0:3] + char2[0:3] + char1[4:5] + char2[4:5] + char1[6:7] + char2[6:7]
+3. Każdy blok jest mieszany w następujący sposób: char1[0:4] + char2[0:4] + char1[4:6] + char2[4:6] + char1[6:8] + char2[6:8]
 4. Następnie blok jest zamieniany na liczbę całkowitą i wstawiany jako TXID zapytania DNS.
 5. Dodatkowo, jeśli 2 ostatnie bity są podzielne przez 2, to do TXID jest dodawane 1500, jeśli nie 850
 6. Serwer DNS odbiera zapytanie i odczytuje TXID jako dane.
