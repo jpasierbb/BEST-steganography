@@ -9,9 +9,9 @@ SPECIAL_CHAR = 0x0000
 
 
 def mix_two_chars_bits(chunk):
-    bits1 = chunk[0:7]
+    bits1 = chunk[0:8]
     bits2 = chunk[8:]
-    mixed = bits1[:4] + bits2[:4] + bits1[4:] + bits2[4:]
+    mixed = bits1[:4] + bits2[:4] + bits1[4:6] + bits2[4:6] + bits1[6:8] + bits2[6:8]
     return mixed
 
 def modify_txid_based_on_last_bits(chunk):
