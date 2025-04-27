@@ -1,6 +1,8 @@
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
+import logging
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 SPECIAL_CHAR = 0x0000
 
@@ -43,10 +45,12 @@ class StegoTXIDResolver(BaseResolver):
     
     def process_message(self):
         full_bits = ''.join(self.chunks)
+        logging.debug(repr(full_bits))
+        print(full_bits)
         message = self.binary_to_text(full_bits)
         print("[*] Hidden message reconstructed:")
-        print(message)
-        with open("data/hidden_message.txt", "w", encoding="CP1250") as f:
+        logging.debug(repr(message))
+        with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
             f.write(message)
         print("[*] Message saved to hidden_message.txt")
     
@@ -59,18 +63,27 @@ class StegoTXIDResolver(BaseResolver):
                 full_bits = full_bits[:-8]
         
         # Podziel na bajty (8 bitów) i konwertuj
-        byte_array = [full_bits[i:i+8] for i in range(0, len(full_bits), 8)]
+        byte_array = [int(full_bits[i:i+8],2) for i in range(0, len(full_bits), 8)]
         
-        # Przekształć na znaki
-        decoded_message = ''.join(chr(int(byte, 2)) for byte in byte_array)
-        
-        try:
-            # Zdekoduj z użyciem CP1250
-            return decoded_message.encode('cp1250').decode('cp1250')
-        except UnicodeDecodeError as e:
-            print(f"Error decoding message: {e}")
-            return None
-
+        # # Przekształć na znaki
+        # decoded_message = ''.join(chr(int(byte)) for byte in byte_array)
+        # try:
+        #     # Zdekoduj z użyciem CP1250
+        #     return decoded_message.encode('cp1250').decode('cp1250')
+        # except UnicodeDecodeError as e:
+        #     print(f"Error decoding message: {e}")
+        #     return None
+        decoded_chars = []
+        for byte in byte_array:
+            try:
+                num = int(byte)
+                char = chr(num)
+                char.encode('cp1250')
+                decoded_chars.append(char)
+            except (ValueError, UnicodeDecodeError):
+                decoded_chars.append('?')
+        decoded_message = ''.join(decoded_chars)
+        return decoded_message
 
 if __name__ == "__main__":
     resolver = StegoTXIDResolver()
