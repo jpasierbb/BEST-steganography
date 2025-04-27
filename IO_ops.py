@@ -1,22 +1,3 @@
-# Wczytywanie danych
-# def read_file(filepath):
-#     try:
-#         with open(filepath, 'r', encoding='CP1250') as file:
-#             return file.read()
-#     except FileNotFoundError:
-#         print(f"Error: File '{filepath}' does not exist")
-#     except Exception as e:
-#         print(f"Error: {e}")
-#     return None
-
-# # Zamiana znaku na binarny odpowiednik
-# def char_to_binary(char):
-#     return format(ord(char), '08b')
-
-# # Stworzenie listy
-# def text_to_binary_list(text):
-#     return [(char, char_to_binary(char)) for char in text]
-
 def read_file(filepath):
     try:
         with open(filepath, 'r', encoding='cp1250') as file:

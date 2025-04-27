@@ -45,16 +45,12 @@ class StegoTXIDResolver(BaseResolver):
     
     def process_message(self):
         full_bits = ''.join(self.chunks)
-        logging.debug(repr(full_bits))
-        print(full_bits)
         message = self.binary_to_text(full_bits)
         print("[*] Hidden message reconstructed:")
-        logging.debug(repr(message))
         with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
             f.write(message)
         print("[*] Message saved to hidden_message.txt")
     
-    # TODO cos tu nie dziala z kodowaniem, ale niby przesyal wszystko ok
     def binary_to_text(self, full_bits):
         # Sprawdź, czy ostatni bajt to same zera
         if len(full_bits) % 8 == 0:  # Upewnij się, że mamy pełne bajty
@@ -62,29 +58,16 @@ class StegoTXIDResolver(BaseResolver):
             if last_byte == "00000000":  # Jeśli ostatni bajt to same zera, usuń go
                 full_bits = full_bits[:-8]
         
-        # Podziel na bajty (8 bitów) i konwertuj
-        byte_array = [int(full_bits[i:i+8],2) for i in range(0, len(full_bits), 8)]
-        
-        # # Przekształć na znaki
-        # decoded_message = ''.join(chr(int(byte)) for byte in byte_array)
-        # try:
-        #     # Zdekoduj z użyciem CP1250
-        #     return decoded_message.encode('cp1250').decode('cp1250')
-        # except UnicodeDecodeError as e:
-        #     print(f"Error decoding message: {e}")
-        #     return None
-        decoded_chars = []
-        for byte in byte_array:
-            try:
-                num = int(byte)
-                char = chr(num)
-                char.encode('cp1250')
-                decoded_chars.append(char)
-            except (ValueError, UnicodeDecodeError):
-                decoded_chars.append('?')
-        decoded_message = ''.join(decoded_chars)
-        return decoded_message
+        byte_array = [int(full_bits[i:i+8],2) for i in range(0, len(full_bits), 8)] # Zamienia 8 bitów na liczby (0-255)
+        message_bytes = bytes(byte_array) # Tworzy obiekt bajtów z listy liczb
 
+        try:
+            message = message_bytes.decode('utf-8')
+            return message
+        except UnicodeDecodeError as e:
+            print(f"Error decoding message: {e}")
+            return None
+        
 if __name__ == "__main__":
     resolver = StegoTXIDResolver()
     server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)
