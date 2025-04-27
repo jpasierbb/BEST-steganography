@@ -1,11 +1,13 @@
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
-import logging
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 SPECIAL_CHAR = 0x0000
 
+domains_dict = {
+    'teams.rnicrosoft.pl': '192.168.56.55',
+    'outlook.rnicrosoft.pl': '192.168.56.65',
+    'onedrive.rnicrosoft.pl': '192.168.56.75'
+    }
 
 class StegoTXIDResolver(BaseResolver):
     def __init__(self):
@@ -15,10 +17,11 @@ class StegoTXIDResolver(BaseResolver):
     def resolve(self, request, handler):
         txid = request.header.id
         qname = request.q.qname
+        domain_name = str(qname).rstrip('.') # Konwertuje odpowiednio domenę
         print(f"Received TXID: {txid}")
-        
+
         reply = request.reply()
-        reply.add_answer(RR(qname, QTYPE.A, ttl=1, rdata=A("192.0.2.1")))
+        reply.add_answer(RR(qname, QTYPE.A, ttl=1, rdata=A(domains_dict[domain_name])))
 
         if txid == SPECIAL_CHAR and not self.receiving:
             print("[*] Start receiving hidden message...")
@@ -70,5 +73,5 @@ class StegoTXIDResolver(BaseResolver):
         
 if __name__ == "__main__":
     resolver = StegoTXIDResolver()
-    server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)
+    server = DNSServer(resolver, port=5353, address="0.0.0.0", tcp=False)
     server.start()
