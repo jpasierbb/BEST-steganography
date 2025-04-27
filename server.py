@@ -1,6 +1,8 @@
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
+import logging
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 SPECIAL_CHAR = 0x0000
 
@@ -45,12 +47,10 @@ class StegoTXIDResolver(BaseResolver):
         full_bits = ''.join(self.chunks)
         message = self.binary_to_text(full_bits)
         print("[*] Hidden message reconstructed:")
-        print(message)
-        with open("data/hidden_message.txt", "w", encoding="CP1250") as f:
+        with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
             f.write(message)
         print("[*] Message saved to hidden_message.txt")
     
-    # TODO cos tu nie dziala z kodowaniem, ale niby przesyal wszystko ok
     def binary_to_text(self, full_bits):
         # Sprawdź, czy ostatni bajt to same zera
         if len(full_bits) % 8 == 0:  # Upewnij się, że mamy pełne bajty
@@ -58,20 +58,16 @@ class StegoTXIDResolver(BaseResolver):
             if last_byte == "00000000":  # Jeśli ostatni bajt to same zera, usuń go
                 full_bits = full_bits[:-8]
         
-        # Podziel na bajty (8 bitów) i konwertuj
-        byte_array = [full_bits[i:i+8] for i in range(0, len(full_bits), 8)]
-        
-        # Przekształć na znaki
-        decoded_message = ''.join(chr(int(byte, 2)) for byte in byte_array)
-        
+        byte_array = [int(full_bits[i:i+8],2) for i in range(0, len(full_bits), 8)] # Zamienia 8 bitów na liczby (0-255)
+        message_bytes = bytes(byte_array) # Tworzy obiekt bajtów z listy liczb
+
         try:
-            # Zdekoduj z użyciem CP1250
-            return decoded_message.encode('cp1250').decode('cp1250')
+            message = message_bytes.decode('utf-8')
+            return message
         except UnicodeDecodeError as e:
             print(f"Error decoding message: {e}")
             return None
-
-
+        
 if __name__ == "__main__":
     resolver = StegoTXIDResolver()
     server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)

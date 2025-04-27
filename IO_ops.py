@@ -1,7 +1,6 @@
-# Wczytywanie danych
 def read_file(filepath):
     try:
-        with open(filepath, 'r', encoding='CP1250') as file:
+        with open(filepath, 'r', encoding='cp1250') as file:
             return file.read()
     except FileNotFoundError:
         print(f"Error: File '{filepath}' does not exist")
@@ -9,14 +8,14 @@ def read_file(filepath):
         print(f"Error: {e}")
     return None
 
-# Zamiana znaku na binarny odpowiednik
-def char_to_binary(char):
-    return format(ord(char), '08b')
+# Zamiana bajtu na binarny odpowiednik
+def byte_to_binary(byte):
+    return format(byte, '08b')
 
-# Stworzenie listy
+# Stworzenie listy bajtów
 def text_to_binary_list(text):
-    return [(char, char_to_binary(char)) for char in text]
-
+    bytes_data = text.encode('utf-8')  # zamieniamy na bajty UTF-8
+    return [(byte, byte_to_binary(byte)) for byte in bytes_data]
 
 if __name__ == "__main__":
     filepath = "data/Sofokles-Antygona.txt"
