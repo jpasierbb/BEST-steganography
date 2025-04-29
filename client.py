@@ -42,9 +42,21 @@ def send_dns_query(filepath):
     binary_list = text_to_binary_list(text)
     binary_data = ''.join(binary for _, binary in binary_list)
 
+    num_parts = random.randint(300, 350)  # dzielenie antygony na części 
+    part_length = len(binary_data) // num_parts
+    parts = []
+    for i in range(num_parts):
+        start = i * part_length
+        if i == num_parts - 1:
+            end = len(binary_data)
+        else:
+            end = (i + 1) * part_length
+        parts.append(binary_data[start:end])
+
+
     start_end_website = random.choice(domains)
     # Start przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
+    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
     print(f"Sent START TXID: {SPECIAL_CHAR}")
 
     try:
@@ -54,40 +66,59 @@ def send_dns_query(filepath):
         print("No response received (timeout)")
 
     # Ukryte dane
-    for i in range(0, len(binary_data), 16):
-        selected_website = random.choice(domains)
-        chunk = binary_data[i:i+16]
-        if len(chunk) < 16:
-            chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
-        
-        chunk = mix_two_chars_bits(chunk)
-        # txid = int(chunk, 2) + int(modify_txid_based_on_last_bits(chunk)) # Konwersja bitów na int
-        txid = int(chunk, 2) # Konwersja bitów na int
+    for part in parts:
+        # Wysłanie znaku specjalnego START
+        start_end_website = random.choice(domains)
+        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
+        print(f"Sent START TXID: {SPECIAL_CHAR}")
 
-        
-        client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5353))
-        print(f"Sent TXID: {txid} (chunk: {chunk})")
-
-        # Odbierz odpowiedz TTL i czekaj az minie TTL
         try:
             response, _ = client.recvfrom(512)
-            dns_response = DNSRecord.parse(response)
-            ttl = dns_response.rr[0].ttl if dns_response.rr else 1  # jeśli nie ma rr, domyśl TTL = 1s
-            print(f"Received response, sleeping for {ttl} seconds")
-            # time.sleep(ttl)
         except socket.timeout:
-            print("No response received (timeout), sleeping for 1 second")
-            # time.sleep(1)
+            pass
 
-    # Koniec przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
-    print(f"Sent END TXID: {SPECIAL_CHAR}")
+        for i in range(0, len(part), 16):
+            selected_website = random.choice(domains)
+            chunk = part[i:i+16]
+            if len(chunk) < 16:
+                chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
+            
+            chunk = mix_two_chars_bits(chunk)
+            txid = int(chunk, 2)
 
-    try:
-        response, _ = client.recvfrom(512)
-        print("Response received")
-    except socket.timeout:
-        print("No response received (timeout)")
+            client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5454))
+            print(f"Sent TXID: {txid} (chunk: {chunk})")
+
+            try:
+                response, _ = client.recvfrom(512)
+            except socket.timeout:
+                pass
+
+        # Wysłanie znaku specjalnego STOP
+        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
+        print(f"Sent STOP TXID: {SPECIAL_CHAR}")
+
+        try:
+            response, _ = client.recvfrom(512)
+        except socket.timeout:
+            pass
+
+        # Po każdej części wysyłamy fake messages
+        num_fake_messages = random.randint(40, 60)
+        send_fake_message(client, num_fake_messages, start_end_website)
+
+def send_fake_message(client, num_fake_messages, start_end_website):
+    for _ in range(num_fake_messages):
+        # FAKE dane wygenerowane jak prawdziwe
+        fake_bits = ''.join(random.choice('01') for _ in range(16))
+        mixed_bits = mix_two_chars_bits(fake_bits)
+        fake_txid = int(mixed_bits, 2)
+
+        fake_website = random.choice(domains)
+        print(f"Sending FAKE TXID: {fake_txid} (chunk: {mixed_bits})")
+        client.sendto(dns_query(fake_txid, fake_website).pack(), ('127.0.0.1', 5454))
+
+
 
 
 if __name__ == "__main__":
