@@ -56,7 +56,7 @@ def send_dns_query(filepath):
 
     start_end_website = random.choice(domains)
     # Start przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
+    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
     print(f"Sent START TXID: {SPECIAL_CHAR}")
 
     try:
@@ -69,7 +69,7 @@ def send_dns_query(filepath):
     for part in parts:
         # Wysłanie znaku specjalnego START
         start_end_website = random.choice(domains)
-        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
+        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
         print(f"Sent START TXID: {SPECIAL_CHAR}")
 
         try:
@@ -86,7 +86,7 @@ def send_dns_query(filepath):
             chunk = mix_two_chars_bits(chunk)
             txid = int(chunk, 2)
 
-            client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5454))
+            client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5353))
             print(f"Sent TXID: {txid} (chunk: {chunk})")
 
             try:
@@ -95,7 +95,7 @@ def send_dns_query(filepath):
                 pass
 
         # Wysłanie znaku specjalnego STOP
-        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5454))
+        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
         print(f"Sent STOP TXID: {SPECIAL_CHAR}")
 
         try:
@@ -116,7 +116,7 @@ def send_fake_message(client, num_fake_messages, start_end_website):
 
         fake_website = random.choice(domains)
         print(f"Sending FAKE TXID: {fake_txid} (chunk: {mixed_bits})")
-        client.sendto(dns_query(fake_txid, fake_website).pack(), ('127.0.0.1', 5454))
+        client.sendto(dns_query(fake_txid, fake_website).pack(), ('127.0.0.1', 5353))
 
 
 
