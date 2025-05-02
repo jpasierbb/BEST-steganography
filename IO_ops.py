@@ -35,7 +35,7 @@ def text_to_binary_list(text):
 def split_text_to_chunks(
     text: str,
     num_chunks: int = 7,
-    max_chunk_size_bytes: int = 10240
+    max_chunk_size_bytes: int = 9600
 ) -> list[str]:
     data = text.encode('utf-8')
     total_bytes = len(data)
@@ -81,7 +81,6 @@ def split_text_to_chunks(
             idx += 1
         chunks.append("".join(chars))
     return chunks
-
 
 
 if __name__ == "__main__":
