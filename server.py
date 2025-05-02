@@ -1,7 +1,7 @@
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
 
-SPECIAL_CHAR = 0x0000
+SPECIAL_CHAR = 0x0000 + 1500
 
 domains_dict = {
     'teams.rnicrosoft.pl': '192.168.56.55',
@@ -33,8 +33,20 @@ class StegoTXIDResolver(BaseResolver):
             self.receiving = False
             self.process_message()
 
+        # elif self.receiving:
+        #     adjusted_txid = txid #- (1500 if txid % 2 == 0 else 850)
+        #     chunk = format(adjusted_txid, '016b')
+        #     mixed_chunk = self.demix_two_chars_bits(chunk)
+        #     self.chunks.append(mixed_chunk)
         elif self.receiving:
-            adjusted_txid = txid #- (1500 if txid % 2 == 0 else 850)
+            # ► FAKE TXID – wszystkie, które mają offset 2200, ignorujemy
+            if 2200 <= txid < 2200 + 0x10000:       # 0x10000 = 2¹⁶
+                return reply                        # nic nie dodajemy do bufora
+
+            # ► PRAWDZIWE pkt: odejmujemy 1500 albo 850
+            offset = 1500 if (txid & 0b11) % 2 == 0 else 850
+            adjusted_txid = (txid - offset) & 0xFFFF
+
             chunk = format(adjusted_txid, '016b')
             mixed_chunk = self.demix_two_chars_bits(chunk)
             self.chunks.append(mixed_chunk)
@@ -48,7 +60,12 @@ class StegoTXIDResolver(BaseResolver):
     
     def process_message(self):
         full_bits = ''.join(self.chunks)
+        print("LEN bits:", len(full_bits), "mod8:", len(full_bits) % 8)
         message = self.binary_to_text(full_bits)
+        if message in None:
+            print("Odrzucam partię ciąg błędny")
+            self.chunks.clear()
+            return
         print("[*] Hidden message reconstructed:")
         with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
             f.write(message)

