@@ -73,6 +73,38 @@ def send_dns_query(filepath):
         return
     text_parts = split_text_to_chunks(text_full)
 
+    #######################
+    #### 3 fake plikow ####
+    #######################
+    print("Spanko przed wyslaniem fake danych")
+    for i in range(0, 150000):
+        byte1 = random_ascii_binary()
+        byte2 = random_ascii_binary()
+        chunk = byte1 + byte2
+        
+        chunk = mix_two_chars_bits(chunk)
+        txid = int(chunk, 2) # Konwersja bitów na int
+
+        domain = random.choice(DOMAINS)
+        
+        client.sendto(dns_query(txid, domain).pack(), ('127.0.0.1', 5353))
+        print(f"Sent fake TXID: {txid} (chunk: {chunk})")
+
+        # Odbierz odpowiedz TTL i czekaj az minie TTL
+        # TODO: odkomentowac, zeby wysylac kolejen dane po wygasneiciu rekordu
+        try:
+            response, _ = client.recvfrom(512)
+            dns_response = DNSRecord.parse(response)
+            ttl = dns_response.rr[0].ttl if dns_response.rr else 1  # jeśli nie ma rr, domyśl TTL = 1s
+            print(f"Received response, sleeping for {ttl} seconds")
+            # time.sleep(ttl)
+        except socket.timeout:
+            print("No response received (timeout), sleeping for 1 second")
+                # time.sleep(1)
+
+    time.sleep(120)
+    print("Spanko przed wyslaniem ukrytych danych")
+
     for text_part in text_parts:
         # Podzial czesci tesktu na jeszcze mneijsze fragmenty i przygotowanie fakeowych danych do przeslania
         text_parts_parts = split_string_data(text_part)
@@ -103,7 +135,7 @@ def send_dns_query(filepath):
                 print(f"Sent fake TXID: {txid} (chunk: {chunk})")
 
                 # Odbierz odpowiedz TTL i czekaj az minie TTL
-                # TODO: odkomentowac
+                # TODO: odkomentowac, zeby wysylac kolejen dane po wygasneiciu rekordu
                 try:
                     response, _ = client.recvfrom(512)
                     dns_response = DNSRecord.parse(response)
@@ -147,7 +179,7 @@ def send_dns_query(filepath):
                 print(f"Sent TXID: {txid} (chunk: {chunk})")
 
                 # Odbierz odpowiedz TTL i czekaj az minie TTL
-                # TODO: odkomentowac
+                # TODO: odkomentowac, zeby wysylac kolejen dane po wygasneiciu rekordu
                 try:
                     response, _ = client.recvfrom(512)
                     dns_response = DNSRecord.parse(response)
@@ -169,6 +201,36 @@ def send_dns_query(filepath):
                 print("Response received")
             except socket.timeout:
                 print("No response received (timeout)")
+
+    #######################
+    #### 4 fake plikow ####
+    #######################
+    print("Spanko przed wyslaniem fake danych")
+    time.sleep(120)
+    for i in range(0, 200000):
+        byte1 = random_ascii_binary()
+        byte2 = random_ascii_binary()
+        chunk = byte1 + byte2
+        
+        chunk = mix_two_chars_bits(chunk)
+        txid = int(chunk, 2) # Konwersja bitów na int
+
+        domain = random.choice(DOMAINS)
+        
+        client.sendto(dns_query(txid, domain).pack(), ('127.0.0.1', 5353))
+        print(f"Sent fake TXID: {txid} (chunk: {chunk})")
+
+        # Odbierz odpowiedz TTL i czekaj az minie TTL
+        # TODO: odkomentowac, zeby wysylac kolejen dane po wygasneiciu rekordu
+        try:
+            response, _ = client.recvfrom(512)
+            dns_response = DNSRecord.parse(response)
+            ttl = dns_response.rr[0].ttl if dns_response.rr else 1  # jeśli nie ma rr, domyśl TTL = 1s
+            print(f"Received response, sleeping for {ttl} seconds")
+            # time.sleep(ttl)
+        except socket.timeout:
+            print("No response received (timeout), sleeping for 1 second")
+                # time.sleep(1)
 
 
 if __name__ == "__main__":
