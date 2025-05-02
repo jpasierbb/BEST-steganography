@@ -8,6 +8,14 @@ def read_file(filepath):
         print(f"Error: {e}")
     return None
 
+def write_file(filepath, data):
+    try:
+        with open(filepath, "w", encoding="cp1250", errors='replace') as f:
+                f.write(data)
+        print(f"Data saved to {filepath}")
+    except OSError as e:
+        print(f"Saving data to {filepath} error: {e}")
+
 # Zamiana bajtu na binarny odpowiednik
 def byte_to_binary(byte):
     return format(byte, '08b')
