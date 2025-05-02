@@ -1,6 +1,7 @@
 import socket
 import random
 import time
+import sys
 from IO_ops import *
 from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
 
@@ -91,5 +92,11 @@ def send_dns_query(filepath):
 
 
 if __name__ == "__main__":
-    filepath = "data/Sofokles-Antygona.txt"
-    send_dns_query(filepath)
+    try:
+        filepath = "data/Sofokles-Antygona.txt"
+        send_dns_query(filepath)
+    except KeyboardInterrupt:
+        print("User stopped the program (CTRL+C).")
+        sys.exit(0)
+    except Exception as Err:
+        print("Server error: ", e)

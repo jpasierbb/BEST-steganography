@@ -1,3 +1,4 @@
+import sys
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
 from IO_ops import write_file
@@ -77,7 +78,13 @@ class StegoTXIDResolver(BaseResolver):
 
 
 if __name__ == "__main__":
-    write_file(OUTPUT_FILE_PATH, "") 
-    resolver = StegoTXIDResolver()
-    server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)
-    server.start()
+    try:
+        write_file(OUTPUT_FILE_PATH, "") 
+        resolver = StegoTXIDResolver()
+        server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)
+        server.start()
+    except KeyboardInterrupt:
+        print("User stopped the program (CTRL+C).")
+        sys.exit(0)
+    except Exception as Err:
+        print("Server error: ", e)
