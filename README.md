@@ -41,8 +41,8 @@ Przykład wiadomość: "hi"
 ## Project Overwiev - How it works in general
 Ogólnie logika przekazywania danych lekko się zmieniła ze względu na wymóg stworzenia 7 plików .pcap zawierających ukryte dane i 7 plików bez danych - łącznie 14 plików .pcap.
 W dużym skrócie:
-    1. Najpierw wysyłane są ok. 3 paczki fakeowych plików, tzn. trzy paczki po 50kB są przesyłane po 2 bajty w każdym zapytaniu do DNS.
-    2. Po przesłaniu 3 paczek fakeowych danych, klient czeka 2 minuty i zaczyna wysyłać ukryte dane przemieszane z fakeowymi.
-    3. Plik Antygona został podzielony na +- 7 równych części w module IO_ops, następnie klient przesyła każdą część po kolei. Dodatkowo, każda część jest dzielona na losową liczbę mniejszych fragmentów i każdy fragment jest przemieszany
-        ze sztucznymi danymi i tak to się przesyła. Liczba sztucznych fragmentów jest dobrana tak, żeby dane z antygony stanowiły +-20%.
-    4. Po przesłaniu wszystkich 7 części podzielonych na mniejsze fragmenty, klient czeka 2 minuty i znów wysyła 4 paczki po 50kB fakeowych danych.
+1. Najpierw wysyłane są ok. 3 paczki fakeowych plików, tzn. trzy paczki po 50kB są przesyłane po 2 bajty w każdym zapytaniu do DNS.
+2. Po przesłaniu 3 paczek fakeowych danych, klient czeka 2 minuty i zaczyna wysyłać ukryte dane przemieszane z fakeowymi.
+3. Plik Antygona został podzielony na +- 7 równych części w module IO_ops, następnie klient przesyła każdą część po kolei. Dodatkowo, każda część jest dzielona na losową liczbę mniejszych fragmentów i każdy fragment jest przemieszany
+    ze sztucznymi danymi i tak to się przesyła. Liczba sztucznych fragmentów jest dobrana tak, żeby dane z antygony stanowiły +-20%.
+4. Po przesłaniu wszystkich 7 części podzielonych na mniejsze fragmenty, klient czeka 2 minuty i znów wysyła 4 paczki po 50kB fakeowych danych.
