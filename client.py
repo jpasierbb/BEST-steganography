@@ -6,23 +6,14 @@ from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
 
 
 SPECIAL_CHAR = 0x0000
+DOMAINS = ['teams.rnicrosoft.pl', 'outlook.rnicrosoft.pl', 'onedrive.rnicrosoft.pl']
 
-domains = ['teams.rnicrosoft.pl', 'outlook.rnicrosoft.pl', 'onedrive.rnicrosoft.pl']
 
 def mix_two_chars_bits(chunk):
     bits1 = chunk[0:8]
     bits2 = chunk[8:]
     mixed = bits1[:4] + bits2[:4] + bits1[4:6] + bits2[4:6] + bits1[6:8] + bits2[6:8]
     return mixed
-
-def modify_txid_based_on_last_bits(chunk):
-    last_two_bits = chunk[-2:]
-    last_two_int = int(last_two_bits, 2)
-    
-    if last_two_int % 2 == 0:
-        return 1500
-    else:
-        return 850
 
 def dns_query(txid, domain):
     return DNSRecord(
@@ -42,9 +33,12 @@ def send_dns_query(filepath):
     binary_list = text_to_binary_list(text)
     binary_data = ''.join(binary for _, binary in binary_list)
 
-    start_end_website = random.choice(domains)
-    # Start przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
+    domain = random.choice(DOMAINS)
+
+    #######################
+    #### Start danych #####
+    #######################
+    client.sendto(dns_query(SPECIAL_CHAR, domain).pack(), ('127.0.0.1', 5353))
     print(f"Sent START TXID: {SPECIAL_CHAR}")
 
     try:
@@ -53,15 +47,16 @@ def send_dns_query(filepath):
     except socket.timeout:
         print("No response received (timeout)")
 
-    # Ukryte dane
+    #######################
+    ##### Ukryte dane #####
+    #######################
     for i in range(0, len(binary_data), 16):
-        selected_website = random.choice(domains)
+        selected_website = random.choice(DOMAINS)
         chunk = binary_data[i:i+16]
         if len(chunk) < 16:
             chunk = chunk.ljust(16, '0')  # Dopelnij zerami do 16 bitów
         
         chunk = mix_two_chars_bits(chunk)
-        # txid = int(chunk, 2) + int(modify_txid_based_on_last_bits(chunk)) # Konwersja bitów na int
         txid = int(chunk, 2) # Konwersja bitów na int
 
         
@@ -79,8 +74,10 @@ def send_dns_query(filepath):
             print("No response received (timeout), sleeping for 1 second")
             # time.sleep(1)
 
-    # Koniec przesylania ukrytej wiadomosci
-    client.sendto(dns_query(SPECIAL_CHAR, start_end_website).pack(), ('127.0.0.1', 5353))
+    #######################
+    #### Koniec danych ####
+    #######################
+    client.sendto(dns_query(SPECIAL_CHAR, domain).pack(), ('127.0.0.1', 5353))
     print(f"Sent END TXID: {SPECIAL_CHAR}")
 
     try:
