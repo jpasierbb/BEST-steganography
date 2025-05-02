@@ -7,10 +7,23 @@ from IO_ops import write_file
 OUTPUT_FILE_PATH = "data/hidden_message.txt"
 SPECIAL_CHAR = 0x0000
 DOMAINS = {
-    'teams.rnicrosoft.pl': '192.168.56.55',
-    'outlook.rnicrosoft.pl': '192.168.56.65',
-    'onedrive.rnicrosoft.pl': '192.168.56.75'
-    }
+    'teams.rnicrosoft.pl':      '192.168.56.55',
+    'outlook.rnicrosoft.pl':    '192.168.56.65',
+    'onedrive.rnicrosoft.pl':   '192.168.56.75',
+    'login.rnicrosoft.pl':      '192.168.56.85',
+    'portal.rnicrosoft.pl':     '192.168.56.95',
+    'sharepoint.rnicrosoft.pl': '192.168.56.105',
+    'skype.rnicrosoft.pl':      '192.168.56.115',
+    'yammer.rnicrosoft.pl':     '192.168.56.125',
+    'admin.rnicrosoft.pl':      '192.168.56.135',
+    'support.rnicrosoft.pl':    '192.168.56.145',
+    'docs.rnicrosoft.pl':       '192.168.56.155',
+    'store.rnicrosoft.pl':      '192.168.56.165',
+    'calendar.rnicrosoft.pl':   '192.168.56.175',
+    'azure.rnicrosoft.pl':      '192.168.56.185',
+    'compliance.rnicrosoft.pl': '192.168.56.195',
+    'security.rnicrosoft.pl':   '192.168.56.205',
+}
 
 
 class StegoTXIDResolver(BaseResolver):

