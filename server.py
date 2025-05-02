@@ -1,13 +1,31 @@
+import sys
+import random
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
+from IO_ops import write_file
 
+
+OUTPUT_FILE_PATH = "data/hidden_message.txt"
 SPECIAL_CHAR = 0x0000
+DOMAINS = {
+    'teams.rnicrosoft.pl':      '192.168.56.55',
+    'outlook.rnicrosoft.pl':    '192.168.56.65',
+    'onedrive.rnicrosoft.pl':   '192.168.56.75',
+    'login.rnicrosoft.pl':      '192.168.56.85',
+    'portal.rnicrosoft.pl':     '192.168.56.95',
+    'sharepoint.rnicrosoft.pl': '192.168.56.105',
+    'skype.rnicrosoft.pl':      '192.168.56.115',
+    'yammer.rnicrosoft.pl':     '192.168.56.125',
+    'admin.rnicrosoft.pl':      '192.168.56.135',
+    'support.rnicrosoft.pl':    '192.168.56.145',
+    'docs.rnicrosoft.pl':       '192.168.56.155',
+    'store.rnicrosoft.pl':      '192.168.56.165',
+    'calendar.rnicrosoft.pl':   '192.168.56.175',
+    'azure.rnicrosoft.pl':      '192.168.56.185',
+    'compliance.rnicrosoft.pl': '192.168.56.195',
+    'security.rnicrosoft.pl':   '192.168.56.205',
+}
 
-domains_dict = {
-    'teams.rnicrosoft.pl': '192.168.56.55',
-    'outlook.rnicrosoft.pl': '192.168.56.65',
-    'onedrive.rnicrosoft.pl': '192.168.56.75'
-    }
 
 class StegoTXIDResolver(BaseResolver):
     def __init__(self):
@@ -21,7 +39,9 @@ class StegoTXIDResolver(BaseResolver):
         print(f"Received TXID: {txid}")
 
         reply = request.reply()
-        reply.add_answer(RR(qname, QTYPE.A, ttl=1, rdata=A(domains_dict[domain_name])))
+        # Random ttl
+        ttl_random = random.randint(1, 16)
+        reply.add_answer(RR(qname, QTYPE.A, ttl=ttl_random, rdata=A(DOMAINS[domain_name])))
 
         if txid == SPECIAL_CHAR and not self.receiving:
             print("[*] Start receiving hidden message...")
@@ -34,7 +54,7 @@ class StegoTXIDResolver(BaseResolver):
             self.process_message()
 
         elif self.receiving:
-            adjusted_txid = txid #- (1500 if txid % 2 == 0 else 850)
+            adjusted_txid = txid
             chunk = format(adjusted_txid, '016b')
             mixed_chunk = self.demix_two_chars_bits(chunk)
             self.chunks.append(mixed_chunk)
@@ -50,8 +70,9 @@ class StegoTXIDResolver(BaseResolver):
         full_bits = ''.join(self.chunks)
         message = self.binary_to_text(full_bits)
         print("[*] Hidden message reconstructed:")
-        with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
-            f.write(message)
+        # with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
+        #     f.write(message)
+        write_file(OUTPUT_FILE_PATH, message, True)
         print("[*] Message saved to hidden_message.txt")
     
     def binary_to_text(self, full_bits):
@@ -70,8 +91,16 @@ class StegoTXIDResolver(BaseResolver):
         except UnicodeDecodeError as e:
             print(f"Error decoding message: {e}")
             return None
-        
+
+
 if __name__ == "__main__":
-    resolver = StegoTXIDResolver()
-    server = DNSServer(resolver, port=5353, address="0.0.0.0", tcp=False)
-    server.start()
+    try:
+        write_file(OUTPUT_FILE_PATH, "") 
+        resolver = StegoTXIDResolver()
+        server = DNSServer(resolver, port=5353, address="127.0.0.1", tcp=False)
+        server.start()
+    except KeyboardInterrupt:
+        print("User stopped the program (CTRL+C).")
+        sys.exit(0)
+    except Exception as Err:
+        print("Server error: ", Err)
