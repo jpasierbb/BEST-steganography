@@ -38,7 +38,11 @@ Przykład wiadomość: "hi"
 **UWAGA:** Jeśli klient ma tylko jeden znak do przesłania, to drugi tworzy jako same zera. 
 
 
-## TODO - Rozszerzenie projektu
-1. Klient odpytuje się losowo lub na bazie jakiegoś wzoru do jednej z trzech domen: **teams.rnicrosoft.pl** lub **outlook.rnicrosoft.pl** lub **onedrive.rnicrosoft.pl**.
-2. Serwer odpowiada adresem IP do konkretnej domeny, np. 192.168.56.55, 192.168.56.65, 192.168.56.75 oraz **ustawia TTL losowo z zakresu**, np. (5,150) sekund.
-3. Klient wysyła kolejne zapytanie po upłynięciu czasu TTL - nie szybciej.
+## Project Overwiev - How it works in general
+Ogólnie logika przekazywania danych lekko się zmieniła ze względu na wymóg stworzenia 7 plików .pcap zawierających ukryte dane i 7 plików bez danych - łącznie 14 plików .pcap.
+W dużym skrócie:
+    1. Najpierw wysyłane są ok. 3 paczki fakeowych plików, tzn. trzy paczki po 50kB są przesyłane po 2 bajty w każdym zapytaniu do DNS.
+    2. Po przesłaniu 3 paczek fakeowych danych, klient czeka 2 minuty i zaczyna wysyłać ukryte dane przemieszane z fakeowymi.
+    3. Plik Antygona został podzielony na +- 7 równych części w module IO_ops, następnie klient przesyła każdą część po kolei. Dodatkowo, każda część jest dzielona na losową liczbę mniejszych fragmentów i każdy fragment jest przemieszany
+        ze sztucznymi danymi i tak to się przesyła. Liczba sztucznych fragmentów jest dobrana tak, żeby dane z antygony stanowiły +-20%.
+    4. Po przesłaniu wszystkich 7 części podzielonych na mniejsze fragmenty, klient czeka 2 minuty i znów wysyła 4 paczki po 50kB fakeowych danych.
