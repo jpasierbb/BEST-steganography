@@ -55,7 +55,7 @@ class StegoTXIDResolver(BaseResolver):
         print("[*] Hidden message reconstructed:")
         # with open("data/hidden_message.txt", "w", encoding="cp1250", errors='replace') as f:
         #     f.write(message)
-        write_file(OUTPUT_FILE_PATH, message)
+        write_file(OUTPUT_FILE_PATH, message, True)
         print("[*] Message saved to hidden_message.txt")
     
     def binary_to_text(self, full_bits):
