@@ -1,4 +1,5 @@
 import sys
+import random
 from dnslib.server import DNSServer, BaseResolver
 from dnslib import DNSRecord, RR, QTYPE, A
 from IO_ops import write_file
@@ -38,8 +39,9 @@ class StegoTXIDResolver(BaseResolver):
         print(f"Received TXID: {txid}")
 
         reply = request.reply()
-        # TODO: add random ttl
-        reply.add_answer(RR(qname, QTYPE.A, ttl=1, rdata=A(DOMAINS[domain_name])))
+        # Random ttl
+        ttl_random = random.randint(1, 16)
+        reply.add_answer(RR(qname, QTYPE.A, ttl=ttl_random, rdata=A(DOMAINS[domain_name])))
 
         if txid == SPECIAL_CHAR and not self.receiving:
             print("[*] Start receiving hidden message...")
