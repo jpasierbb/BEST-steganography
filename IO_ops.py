@@ -11,11 +11,13 @@ def read_file(filepath):
         print(f"Error: {e}")
     return None
 
-def write_file(filepath, data):
+def write_file(filepath, data, append: bool = False):
+    mode = 'a' if append else 'w'
     try:
-        with open(filepath, "w", encoding="cp1250", errors='replace') as f:
+        with open(filepath, mode, encoding="cp1250", errors='replace') as f:
                 f.write(data)
-        print(f"Data saved to {filepath}")
+        action = 'Appended to' if append else 'Data saved to'
+        print(f"{action} {filepath}")
     except OSError as e:
         print(f"Saving data to {filepath} error: {e}")
 
