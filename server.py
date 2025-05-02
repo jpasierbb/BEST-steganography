@@ -25,6 +25,7 @@ class StegoTXIDResolver(BaseResolver):
         print(f"Received TXID: {txid}")
 
         reply = request.reply()
+        # TODO: add random ttl
         reply.add_answer(RR(qname, QTYPE.A, ttl=1, rdata=A(DOMAINS[domain_name])))
 
         if txid == SPECIAL_CHAR and not self.receiving:
@@ -87,4 +88,4 @@ if __name__ == "__main__":
         print("User stopped the program (CTRL+C).")
         sys.exit(0)
     except Exception as Err:
-        print("Server error: ", e)
+        print("Server error: ", Err)
