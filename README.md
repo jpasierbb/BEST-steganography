@@ -1,5 +1,5 @@
-# BEST-steganography
-BEST steganography project
+# DNS-TXID-steganography
+DNS-TXID-steganography
 
 ## Project overview
 
